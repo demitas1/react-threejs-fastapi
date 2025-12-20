@@ -80,7 +80,6 @@ export class GLTFSceneLoader implements ISceneLoader {
 
       // Store mesh reference
       this.meshes.set(meshName, object)
-      this.meshes.set(object.name, object)
 
       // Process materials
       const materialName = this.processMaterials(object, meshName)
