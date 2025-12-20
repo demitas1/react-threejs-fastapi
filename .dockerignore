@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+LICENSE.txt
+
+# IDE
+.vscode
+.idea
+
+# Frontend
+frontend/node_modules
+frontend/dist
+
+# Backend
+backend/venv
+backend/__pycache__
+backend/src/__pycache__
+*.pyc
+*.pyo
