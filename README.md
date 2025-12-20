@@ -1,66 +1,50 @@
 # React - ThreeJS - FastAPI boilerplate
 
-Road shape plotting tool.
+React + Three.js + FastAPI による3D可視化アプリケーションのボイラープレート。
 
-## Files
+## 必要条件
+
+- Docker
+- Docker Compose
+
+## 起動
+
+```bash
+docker compose up --build
+```
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+
+## 停止
+
+```bash
+docker compose down
+```
+
+## ディレクトリ構造
 
 ```
 .
-├── backend
-│   ├── main.py
-│   └── requirements.txt
-├── frontend
-│   ├── index.html
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── src
-│   │   ├── App.tsx
-│   │   ├── components
-│   │   │   └── Scene.tsx
-│   │   ├── main.tsx
-│   │   └── style.css
-│   ├── tsconfig.json
-│   ├── tsconfig.node.json
-│   └── vite.config.ts
-├── LICENSE.txt
+├── docker-compose.yml
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── src/
+│   │   └── main.py
+│   └── static/
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/
+│       ├── App.tsx
+│       ├── main.tsx
+│       ├── style.css
+│       ├── components/
+│       │   └── Scene.tsx
+│       └── types/
+│           └── gltf.ts
 └── README.md
-```
-
-## Setup
-
-### Back end
-
-```
-cd backend
-python -m venv venv
-source venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### Front end
-
-```
-cd frontend
-npm install
-```
-
-## Run
-
-### Back end
-
-```
-cd backend
-source venv/bin/activate
-
-python main.py
-```
-
-### Front end
-
-```
-cd frontend
-npm run dev
 ```
 
 ## License
