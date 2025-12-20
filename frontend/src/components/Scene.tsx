@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
 import * as THREE from 'three'
-import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
-import { SceneProps, SceneObjects, GltfSceneData, MeshInfo } from '../types/gltf'
+import { SceneProps, MeshInfo } from '../types/gltf'
 
 const Scene = (sceneProps: SceneProps) => {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -186,11 +186,11 @@ const Scene = (sceneProps: SceneProps) => {
       console.log(`モデルをロード中: ${url}`)
       loader.load(
         url,
-        (gltf) => onModelLoaded(gltf),
-        (xhr) => {
+        (gltf: GLTF) => onModelLoaded(gltf),
+        (xhr: ProgressEvent) => {
           console.log((xhr.loaded / xhr.total * 100) + '% loaded')
         },
-        (error) => {
+        (error: unknown) => {
           console.error('GLTFLoader error:', error)
         }
       )
@@ -348,7 +348,7 @@ const Scene = (sceneProps: SceneProps) => {
     const loadedMeshInfos: MeshInfo[] = [];
 
     // collect objects in the GLTF
-    model.traverse((object) => {
+    model.traverse((object: THREE.Object3D) => {
       // GLTFの元データから名前を取得
       const originalName = object.userData?.name || object.name;
       console.log(`Original name: ${originalName}, Three.js name: ${object.name}`);
