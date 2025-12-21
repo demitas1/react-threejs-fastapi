@@ -67,10 +67,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.send_json(json_data, websocket)
             elif message == "new scene1":
                 # 「new scene1」を受信した場合、シーン1へ切り替え指示を送信
-                json_data = {"new scene": "scene1"}
+                json_data = {
+                    "command": "new gltf scene",
+                    "gltf_path": "static/TestCube.glb",
+                    }
                 print(f"シーン切り替えコマンドを送信: {json_data}")
                 await manager.send_json(json_data, websocket)
-            else:
+            elif message == "send binary test":
                 # 通常の応答（ランダムなカラーを送信）
                 # RGBA値をランダムに生成
                 r = random.randint(0, 255)
