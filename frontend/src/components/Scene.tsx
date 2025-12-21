@@ -2,13 +2,65 @@ import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { useGLTFScene } from '../hooks/useGLTFScene'
+import { useSceneConfig } from '../hooks/useSceneConfig'
 import { MeshInfo } from '../lib/gltf'
+import type { SceneConfig } from '../config/types'
 
 interface SceneProps {
   modelUrl?: string
   meshVisibility?: Record<string, boolean>
   onMeshesLoaded?: (meshInfos: MeshInfo[]) => void
   reloadTrigger?: number
+}
+
+/**
+ * Apply scene configuration to Three.js objects
+ */
+function applySceneConfig(
+  scene: THREE.Scene,
+  camera: THREE.PerspectiveCamera,
+  controls: OrbitControls,
+  config: SceneConfig
+): void {
+  // Background
+  scene.background = new THREE.Color(config.background)
+
+  // Camera
+  camera.fov = config.camera.fov
+  camera.near = config.camera.near
+  camera.far = config.camera.far
+  camera.position.set(...config.camera.position)
+  camera.updateProjectionMatrix()
+
+  // Controls
+  controls.enableDamping = config.controls.enableDamping
+  controls.dampingFactor = config.controls.dampingFactor
+}
+
+/**
+ * Create lights based on configuration
+ */
+function createLights(config: SceneConfig): THREE.Light[] {
+  const lights: THREE.Light[] = []
+
+  // Ambient light
+  const ambientLight = new THREE.AmbientLight(
+    new THREE.Color(config.lights.ambient.color),
+    config.lights.ambient.intensity
+  )
+  lights.push(ambientLight)
+
+  // Directional lights
+  for (const dirConfig of config.lights.directional) {
+    const directionalLight = new THREE.DirectionalLight(
+      new THREE.Color(dirConfig.color),
+      dirConfig.intensity
+    )
+    directionalLight.position.set(...dirConfig.position)
+    lights.push(directionalLight)
+  }
+
+  return lights
 }
 
 const Scene = ({
@@ -23,6 +75,10 @@ const Scene = ({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
   const controlsRef = useRef<OrbitControls | null>(null)
   const animationRef = useRef<number>(0)
+  const lightsRef = useRef<THREE.Light[]>([])
+
+  // Load scene configuration
+  const { config } = useSceneConfig()
 
   // Use GLTF Scene hook
   const { isLoading, error, getMesh } = useGLTFScene({
@@ -58,32 +114,30 @@ const Scene = ({
 
     // Scene
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x222222)
     sceneRef.current = scene
 
-    // Camera
+    // Camera (initial setup with aspect ratio)
     const camera = new THREE.PerspectiveCamera(
-      75,
+      config.camera.fov,
       containerWidth / containerHeight,
-      0.1,
-      100
+      config.camera.near,
+      config.camera.far
     )
-    camera.position.z = 20
     cameraRef.current = camera
 
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableDamping = true
-    controls.dampingFactor = 0.25
     controlsRef.current = controls
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-    scene.add(ambientLight)
+    // Apply configuration
+    applySceneConfig(scene, camera, controls, config)
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
-    directionalLight.position.set(5, 5, 5)
-    scene.add(directionalLight)
+    // Create and add lights
+    const lights = createLights(config)
+    lightsRef.current = lights
+    for (const light of lights) {
+      scene.add(light)
+    }
 
     // Resize handler
     const handleResize = () => {
@@ -140,7 +194,7 @@ const Scene = ({
         controlsRef.current.dispose()
       }
     }
-  }, [])
+  }, [config])
 
   // Log loading state and errors
   useEffect(() => {

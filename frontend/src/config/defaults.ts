@@ -1,0 +1,32 @@
+import type { SceneConfig } from './types'
+
+/**
+ * Default scene configuration
+ * These values are used when external config is not available or partially defined
+ */
+export const DEFAULT_SCENE_CONFIG: SceneConfig = {
+  background: '#222222',
+  camera: {
+    fov: 75,
+    near: 0.1,
+    far: 100,
+    position: [0, 0, 20],
+  },
+  controls: {
+    enableDamping: true,
+    dampingFactor: 0.25,
+  },
+  lights: {
+    ambient: {
+      color: '#ffffff',
+      intensity: 0.5,
+    },
+    directional: [
+      {
+        color: '#ffffff',
+        intensity: 1,
+        position: [5, 5, 5],
+      },
+    ],
+  },
+}
