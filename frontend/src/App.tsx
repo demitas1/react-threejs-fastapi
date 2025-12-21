@@ -34,19 +34,10 @@ function App() {
 
   const handleWebSocketMessage = useCallback(
     (message: WebSocketMessage) => {
-      if (message.type === 'binary') {
-        const uint8Array = new Uint8Array(message.data as ArrayBuffer)
-        if (uint8Array.length >= 4) {
-          const [r, g, b, a] = uint8Array
-          console.log(`RGBA: (${r}, ${g}, ${b}, ${a})`)
-        }
-      } else if (message.type === 'json') {
+      if (message.type === 'json') {
         const jsonData = message.data as Record<string, unknown>
 
-        if (jsonData['new scene'] === 'scene1') {
-          console.log('Switching to scene1')
-          handleSceneChange(`${BACKEND_URL}/static/TestCube.glb`)
-        } else if (jsonData['new scene'] === 'scene2' || jsonData['new scene'] === 'scene3') {
+        if (jsonData['command'] == 'new gltf scene') {
           if ('gltf_path' in jsonData) {
             const glbPath = jsonData['gltf_path'] as string
             console.log(`Switching to scene: ${glbPath}`)
@@ -54,6 +45,8 @@ function App() {
           }
         } else if (jsonData['test message']) {
           console.log(`Test message: ${jsonData['test message']}`)
+        } else {
+          console.log(`Unknown message type: ${jsonData}`)
         }
       }
     },
