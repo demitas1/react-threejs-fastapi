@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { ConnectionStatus } from './ConnectionStatus'
+import { ConnectionStatus } from '../../../src/components/controls/ConnectionStatus'
 
 describe('ConnectionStatus', () => {
   it('renders status text', () => {
