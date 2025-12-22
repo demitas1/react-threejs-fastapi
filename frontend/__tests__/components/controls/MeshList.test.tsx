@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MeshList } from './MeshList'
-import type { MeshInfo } from '../../types/gltf'
+import { MeshList } from '../../../src/components/controls/MeshList'
+import type { MeshInfo } from '../../../src/types/gltf'
 
 const createMockMesh = (name: string, x = 0, y = 0, z = 0): MeshInfo => ({
   name,

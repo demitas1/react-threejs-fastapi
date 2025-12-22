@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { loadSceneConfig, getDefaultConfig } from './loader'
-import { DEFAULT_SCENE_CONFIG } from './defaults'
+import { loadSceneConfig, getDefaultConfig } from '../../src/config/loader'
+import { DEFAULT_SCENE_CONFIG } from '../../src/config/defaults'
 
 describe('loader', () => {
   const originalFetch = globalThis.fetch

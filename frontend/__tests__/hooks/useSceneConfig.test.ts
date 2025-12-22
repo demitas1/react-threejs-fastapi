@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
-import { useSceneConfig } from './useSceneConfig'
-import { DEFAULT_SCENE_CONFIG } from '../config/defaults'
+import { useSceneConfig } from '../../src/hooks/useSceneConfig'
+import { DEFAULT_SCENE_CONFIG } from '../../src/config/defaults'
 
 describe('useSceneConfig', () => {
   const originalFetch = globalThis.fetch

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MessageForm } from './MessageForm'
+import { MessageForm } from '../../../src/components/controls/MessageForm'
 
 describe('MessageForm', () => {
   it('renders input with default value', () => {
