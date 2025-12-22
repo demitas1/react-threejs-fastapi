@@ -15,7 +15,7 @@ describe('useSceneConfig', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns default config initially', () => {
+  it('returns default config initially', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({}),
@@ -24,9 +24,14 @@ describe('useSceneConfig', () => {
     const { result } = renderHook(() => useSceneConfig())
 
     expect(result.current.config).toEqual(DEFAULT_SCENE_CONFIG)
+
+    // Wait for async operations to complete before unmount
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
   })
 
-  it('starts with isLoading true', () => {
+  it('starts with isLoading true', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({}),
@@ -35,6 +40,11 @@ describe('useSceneConfig', () => {
     const { result } = renderHook(() => useSceneConfig())
 
     expect(result.current.isLoading).toBe(true)
+
+    // Wait for async operations to complete before unmount
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
   })
 
   it('sets isLoading to false after loading', async () => {
@@ -113,7 +123,7 @@ describe('useSceneConfig', () => {
     })
   })
 
-  it('has no error initially', () => {
+  it('has no error initially', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({}),
@@ -122,5 +132,10 @@ describe('useSceneConfig', () => {
     const { result } = renderHook(() => useSceneConfig())
 
     expect(result.current.error).toBeNull()
+
+    // Wait for async operations to complete before unmount
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
   })
 })
