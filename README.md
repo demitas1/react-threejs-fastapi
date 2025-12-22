@@ -10,16 +10,30 @@ React + Three.js + FastAPI による3D可視化アプリケーションのボイ
 ## 起動
 
 ```bash
-docker compose up --build
+./scripts/start.sh
 ```
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000
 
+依存関係を変更した場合はクリーンビルドを実行：
+
+```bash
+./scripts/start.sh --rebuild
+```
+
 ## 停止
 
 ```bash
-docker compose down
+./scripts/stop.sh
+```
+
+## テスト
+
+```bash
+./scripts/test.sh              # ウォッチモードで実行
+./scripts/test.sh --run        # 1回実行
+./scripts/test.sh --coverage   # カバレッジレポート付き
 ```
 
 ## 開発
@@ -44,6 +58,10 @@ docker compose exec frontend npx tsc --noEmit
 ```
 .
 ├── docker-compose.yml
+├── scripts/
+│   ├── start.sh                     # コンテナ起動
+│   ├── stop.sh                      # コンテナ停止
+│   └── test.sh                      # テスト実行
 ├── backend/
 │   ├── Dockerfile
 │   ├── requirements.txt
