@@ -7,11 +7,13 @@ interface UseGLTFSceneOptions {
   modelUrl: string
   meshVisibility?: Record<string, boolean>
   onMeshesLoaded?: (meshInfos: MeshInfo[]) => void
+  onProgress?: (progress: number) => void
   reloadTrigger?: number
 }
 
 interface UseGLTFSceneReturn {
   isLoading: boolean
+  loadProgress: number
   error: string | null
   model: THREE.Group | null
   meshInfos: MeshInfo[]
@@ -23,10 +25,12 @@ export const useGLTFScene = ({
   modelUrl,
   meshVisibility = {},
   onMeshesLoaded,
+  onProgress,
   reloadTrigger = 0,
 }: UseGLTFSceneOptions): UseGLTFSceneReturn => {
   const loaderRef = useRef<GLTFSceneLoader | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [loadProgress, setLoadProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [model, setModel] = useState<THREE.Group | null>(null)
   const [meshInfos, setMeshInfos] = useState<MeshInfo[]>([])
@@ -51,6 +55,7 @@ export const useGLTFScene = ({
     }
 
     setIsLoading(true)
+    setLoadProgress(0)
     setError(null)
 
     try {
@@ -67,7 +72,12 @@ export const useGLTFScene = ({
       const result = await loaderRef.current.load({
         url: modelUrl,
         onProgress: (progress) => {
-          console.log(`Loading: ${progress.toFixed(1)}%`)
+          setLoadProgress(progress)
+          if (onProgress) {
+            onProgress(progress)
+          } else {
+            console.log(`Loading: ${progress.toFixed(1)}%`)
+          }
         },
       })
 
@@ -93,7 +103,7 @@ export const useGLTFScene = ({
     } finally {
       setIsLoading(false)
     }
-  }, [scene, modelUrl, meshVisibility, onMeshesLoaded])
+  }, [scene, modelUrl, meshVisibility, onMeshesLoaded, onProgress])
 
   // Trigger load on URL or reloadTrigger change
   useEffect(() => {
@@ -129,6 +139,7 @@ export const useGLTFScene = ({
 
   return {
     isLoading,
+    loadProgress,
     error,
     model,
     meshInfos,

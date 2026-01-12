@@ -10,6 +10,7 @@ interface SceneProps {
   modelUrl?: string
   meshVisibility?: Record<string, boolean>
   onMeshesLoaded?: (meshInfos: MeshInfo[]) => void
+  onProgress?: (progress: number) => void
   reloadTrigger?: number
 }
 
@@ -67,6 +68,7 @@ const Scene = ({
   modelUrl = '',
   meshVisibility = {},
   onMeshesLoaded,
+  onProgress,
   reloadTrigger = 0,
 }: SceneProps) => {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -86,6 +88,7 @@ const Scene = ({
     modelUrl,
     meshVisibility,
     onMeshesLoaded,
+    onProgress,
     reloadTrigger,
   })
 

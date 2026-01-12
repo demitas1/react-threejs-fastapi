@@ -58,6 +58,10 @@ function App() {
     onMessage: handleWebSocketMessage,
   })
 
+  const handleLoadProgress = useCallback((progress: number) => {
+    console.log(`Loading model: ${progress.toFixed(1)}%`)
+  }, [])
+
   const handleMeshesLoaded = useCallback((meshes: MeshInfo[]) => {
     console.log('Meshes loaded:', meshes.length)
     setMeshInfos(meshes)
@@ -86,6 +90,7 @@ function App() {
       <div className="scene-container">
         <Scene
           onMeshesLoaded={handleMeshesLoaded}
+          onProgress={handleLoadProgress}
           meshVisibility={meshVisibility}
           modelUrl={currentSceneUrl}
           reloadTrigger={reloadScene}
