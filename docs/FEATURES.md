@@ -17,6 +17,7 @@ WebSocket通信を介したリアルタイム3D可視化アプリケーション
 | 通信 | WebSocket |
 | コンテナ | Docker, Docker Compose |
 | テスト | Vitest, @testing-library/react |
+| バージョン管理 | Git, Git LFS（大容量ファイル管理） |
 
 ---
 
@@ -58,6 +59,14 @@ WebSocket通信を介したリアルタイム3D可視化アプリケーション
 - `GLTFSceneLoader`クラスによるGLTF/GLBファイルの動的ロード
 - バックエンドの`/static`ディレクトリからモデルを取得
 - ロード進捗の監視とエラーハンドリング
+- **ローディングプログレスバー**: モデルロード中に進捗を視覚的に表示
+
+#### GLTFアニメーション再生
+- GLTFファイル内のアニメーションを動的に読み取り
+- ロード完了時にデフォルトアニメーションを自動再生
+- **クリックでアニメーション切り替え**: シーンをクリックするたびに次のアニメーションへ巡回
+- **0.5秒クロスフェード**: アニメーション切り替え時のスムーズなブレンド
+- 複数アニメーション対応（将来の追加・名称変更にも対応）
 
 #### OrbitControlsによるカメラ操作
 - マウスドラッグによる回転
@@ -199,6 +208,28 @@ npm install
 npm run dev
 ```
 
+### Git LFS（大容量ファイル管理）
+
+3Dモデル、画像、音声などの大容量バイナリファイルはGit LFSで管理。
+
+**対象ファイル（.gitattributesで定義）:**
+
+| カテゴリ | 拡張子 |
+|----------|--------|
+| 3Dモデル | glb, gltf, fbx, obj, mtl, stl, dae, blend, 3ds |
+| 画像 | png, jpg, jpeg, gif, bmp, tiff, webp, svg, ico, psd, ai, eps, hdr, exr |
+| テクスチャ | ktx, ktx2, dds, basis |
+| 音声 | mp3, wav, ogg, flac |
+| 動画 | mp4, webm, mov, avi |
+| フォント | ttf, otf, woff, woff2 |
+| アーカイブ | zip, tar.gz, 7z, rar |
+
+**セットアップ:**
+```bash
+git lfs install
+git lfs pull
+```
+
 ---
 
 ## 6. テスト
@@ -243,12 +274,12 @@ npm run dev
 
 ## 7. 現状の制約
 
-### 7.1 アニメーション処理
+### 7.1 メッシュ回転処理
 
-`Scene.tsx`のアニメーションループ内で特定のメッシュ名にハードコードされた処理が存在する。
+`Scene.tsx`のアニメーションループ内で特定のメッシュ名にハードコードされた回転処理が存在する（デモ用）。
 
 ```typescript
-// Scene.tsx:160-168
+// Scene.tsx
 const cube = getMeshRef.current('Cube')
 if (cube) {
   cube.rotation.x += 0.01
@@ -263,24 +294,28 @@ if (icosphere) {
 **制約事項:**
 - `Cube`と`Icosphere`という特定のメッシュ名に依存
 - 異なる構造のGLTFモデルでは動作しない
-- アニメーション追加にはコード修正が必要
+- 回転処理追加にはコード修正が必要
+
+> **注**: GLTFファイル内蔵のアニメーション（スキンメッシュアニメーション等）は`GLTFSceneLoader`のアニメーション機能で対応済み。
 
 ### 7.2 WebSocketコマンド体系
 
 バックエンドのメッセージ処理が固定文字列マッチングによる試験的実装となっている。
 
 ```python
-# main.py:63-87
+# main.py
 if message == "request json":
     # 固定のテストJSONを返す
 elif message == "new scene1":
-    # 固定のシーン切り替えコマンド
+    # TestCube.glbへのシーン切り替えコマンド
+elif message == "new scene2":
+    # Xbot-animations.glb（アニメーション付き）へのシーン切り替えコマンド
 elif message == "send binary test":
     # ランダムなRGBAバイナリを返す
 ```
 
 **制約事項:**
-- 固定文字列（`"request json"`, `"new scene1"`, `"send binary test"`）のみ対応
+- 固定文字列（`"request json"`, `"new scene1"`, `"new scene2"`, `"send binary test"`）のみ対応
 - テスト用の固定レスポンスのみで実用的な機能がない
 - コマンド拡張に都度コード修正が必要
 - エラーハンドリングやバリデーションが不十分
@@ -306,20 +341,14 @@ elif message == "send binary test":
 
 ### 8.2 将来の改善計画
 
-#### 汎用アニメーション管理システム
+#### 宣言的メッシュアニメーション設定
 
-GLTFモデルの内部構造に依存しない、宣言的なアニメーション定義機構の導入を計画。
-
-**設計方針:**
-- 外部設定ファイルによるアニメーション定義
-- メッシュ名のパターンマッチング対応
-- アニメーションタイプの抽象化（回転、移動、スケール等）
-- 複数アニメーションの組み合わせ
+現在ハードコードされているメッシュ回転処理を、外部設定ファイルで定義可能にする計画。
 
 **想定する設定形式例:**
 ```json
 {
-  "animations": [
+  "meshAnimations": [
     {
       "target": "Cube*",
       "type": "rotate",
@@ -335,6 +364,8 @@ GLTFモデルの内部構造に依存しない、宣言的なアニメーショ�
   ]
 }
 ```
+
+> **注**: GLTFファイル内蔵アニメーション（スキンメッシュ等）は既に`GLTFSceneLoader`で対応済み。
 
 #### WebSocketコマンドプロトコルの整備
 
