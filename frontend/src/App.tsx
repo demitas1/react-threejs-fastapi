@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import Scene from './components/Scene'
+import LoadingBar from './components/LoadingBar'
 import { ControlPanel } from './components/controls'
 import { useWebSocket, WebSocketMessage } from './hooks/useWebSocket'
 import { MeshInfo } from './types/gltf'
@@ -13,6 +14,8 @@ function App() {
   const [meshVisibility, setMeshVisibility] = useState<Record<string, boolean>>({})
   const [currentSceneUrl, setCurrentSceneUrl] = useState<string>('')
   const [reloadScene, setReloadScene] = useState<number>(0)
+  const [isModelLoading, setIsModelLoading] = useState(false)
+  const [loadProgress, setLoadProgress] = useState(0)
 
   const meshesInitializedRef = useRef<boolean>(false)
 
@@ -59,7 +62,11 @@ function App() {
   })
 
   const handleLoadProgress = useCallback((progress: number) => {
-    console.log(`Loading model: ${progress.toFixed(1)}%`)
+    setLoadProgress(progress)
+  }, [])
+
+  const handleLoadingChange = useCallback((isLoading: boolean) => {
+    setIsModelLoading(isLoading)
   }, [])
 
   const handleMeshesLoaded = useCallback((meshes: MeshInfo[]) => {
@@ -87,10 +94,12 @@ function App() {
 
   return (
     <div className="app-container">
+      <LoadingBar progress={loadProgress} visible={isModelLoading} />
       <div className="scene-container">
         <Scene
           onMeshesLoaded={handleMeshesLoaded}
           onProgress={handleLoadProgress}
+          onLoadingChange={handleLoadingChange}
           meshVisibility={meshVisibility}
           modelUrl={currentSceneUrl}
           reloadTrigger={reloadScene}

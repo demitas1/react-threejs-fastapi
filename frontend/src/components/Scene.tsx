@@ -11,6 +11,7 @@ interface SceneProps {
   meshVisibility?: Record<string, boolean>
   onMeshesLoaded?: (meshInfos: MeshInfo[]) => void
   onProgress?: (progress: number) => void
+  onLoadingChange?: (isLoading: boolean) => void
   reloadTrigger?: number
 }
 
@@ -69,6 +70,7 @@ const Scene = ({
   meshVisibility = {},
   onMeshesLoaded,
   onProgress,
+  onLoadingChange,
   reloadTrigger = 0,
 }: SceneProps) => {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -199,15 +201,17 @@ const Scene = ({
     }
   }, [config])
 
-  // Log loading state and errors
+  // Notify loading state changes
   useEffect(() => {
-    if (isLoading) {
-      console.log('Loading GLTF model...')
-    }
+    onLoadingChange?.(isLoading)
+  }, [isLoading, onLoadingChange])
+
+  // Log errors
+  useEffect(() => {
     if (error) {
       console.error('GLTF loading error:', error)
     }
-  }, [isLoading, error])
+  }, [error])
 
   return <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
 }
