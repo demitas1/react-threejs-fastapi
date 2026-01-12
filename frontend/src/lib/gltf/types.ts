@@ -14,6 +14,14 @@ export interface MeshInfo {
 }
 
 /**
+ * Animation information extracted from GLTF model
+ */
+export interface AnimationInfo {
+  name: string
+  duration: number
+}
+
+/**
  * Options for loading a GLTF scene
  */
 export interface SceneLoadOptions {
@@ -27,6 +35,7 @@ export interface SceneLoadOptions {
 export interface SceneLoadResult {
   model: THREE.Group
   meshInfos: MeshInfo[]
+  animations: AnimationInfo[]
   meshes: Map<string, THREE.Mesh>
   materials: Map<string, THREE.Material>
   textures: Map<string, THREE.Texture>

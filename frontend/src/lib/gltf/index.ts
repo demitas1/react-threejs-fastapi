@@ -5,4 +5,5 @@ export type {
   SceneLoadOptions,
   SceneLoadResult,
   MeshInfo,
+  AnimationInfo,
 } from './types'

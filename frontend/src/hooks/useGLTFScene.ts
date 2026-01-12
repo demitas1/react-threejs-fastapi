@@ -1,12 +1,13 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import * as THREE from 'three'
-import { GLTFSceneLoader, MeshInfo } from '../lib/gltf'
+import { GLTFSceneLoader, MeshInfo, AnimationInfo } from '../lib/gltf'
 
 interface UseGLTFSceneOptions {
   scene: THREE.Scene | null
   modelUrl: string
   meshVisibility?: Record<string, boolean>
   onMeshesLoaded?: (meshInfos: MeshInfo[]) => void
+  onAnimationsLoaded?: (animations: AnimationInfo[]) => void
   onProgress?: (progress: number) => void
   reloadTrigger?: number
 }
@@ -17,7 +18,12 @@ interface UseGLTFSceneReturn {
   error: string | null
   model: THREE.Group | null
   meshInfos: MeshInfo[]
+  animations: AnimationInfo[]
+  currentAnimation: string | null
   getMesh: (name: string) => THREE.Mesh | undefined
+  playAnimation: (name: string) => void
+  nextAnimation: () => string | null
+  updateAnimation: (delta: number) => void
 }
 
 export const useGLTFScene = ({
@@ -25,6 +31,7 @@ export const useGLTFScene = ({
   modelUrl,
   meshVisibility = {},
   onMeshesLoaded,
+  onAnimationsLoaded,
   onProgress,
   reloadTrigger = 0,
 }: UseGLTFSceneOptions): UseGLTFSceneReturn => {
@@ -34,6 +41,8 @@ export const useGLTFScene = ({
   const [error, setError] = useState<string | null>(null)
   const [model, setModel] = useState<THREE.Group | null>(null)
   const [meshInfos, setMeshInfos] = useState<MeshInfo[]>([])
+  const [animations, setAnimations] = useState<AnimationInfo[]>([])
+  const [currentAnimation, setCurrentAnimation] = useState<string | null>(null)
   const meshesInitializedRef = useRef(false)
 
   // Initialize loader
@@ -85,6 +94,11 @@ export const useGLTFScene = ({
       scene.add(result.model)
       setModel(result.model)
       setMeshInfos(result.meshInfos)
+      setAnimations(result.animations)
+
+      // Set current animation name
+      const initialAnimation = loaderRef.current.getCurrentAnimationName()
+      setCurrentAnimation(initialAnimation)
 
       // Apply initial visibility
       if (Object.keys(meshVisibility).length > 0) {
@@ -96,6 +110,11 @@ export const useGLTFScene = ({
         meshesInitializedRef.current = true
         onMeshesLoaded(result.meshInfos)
       }
+
+      // Notify parent about animations
+      if (onAnimationsLoaded && result.animations.length > 0) {
+        onAnimationsLoaded(result.animations)
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load model'
       setError(errorMessage)
@@ -103,7 +122,7 @@ export const useGLTFScene = ({
     } finally {
       setIsLoading(false)
     }
-  }, [scene, modelUrl, onMeshesLoaded, onProgress])
+  }, [scene, modelUrl, onMeshesLoaded, onAnimationsLoaded, onProgress])
 
   // Trigger load on URL or reloadTrigger change
   useEffect(() => {
@@ -137,12 +156,42 @@ export const useGLTFScene = ({
     return loaderRef.current?.getMesh(name)
   }, [])
 
+  // Play animation by name
+  const playAnimation = useCallback((name: string): void => {
+    if (loaderRef.current) {
+      loaderRef.current.playAnimation(name)
+      setCurrentAnimation(name)
+    }
+  }, [])
+
+  // Play next animation in sequence
+  const nextAnimation = useCallback((): string | null => {
+    if (loaderRef.current) {
+      const nextName = loaderRef.current.nextAnimation()
+      if (nextName) {
+        setCurrentAnimation(nextName)
+      }
+      return nextName
+    }
+    return null
+  }, [])
+
+  // Update animation mixer (call in animation loop)
+  const updateAnimation = useCallback((delta: number): void => {
+    loaderRef.current?.update(delta)
+  }, [])
+
   return {
     isLoading,
     loadProgress,
     error,
     model,
     meshInfos,
+    animations,
+    currentAnimation,
     getMesh,
+    playAnimation,
+    nextAnimation,
+    updateAnimation,
   }
 }

@@ -80,12 +80,13 @@ const Scene = ({
   const controlsRef = useRef<OrbitControls | null>(null)
   const animationRef = useRef<number>(0)
   const lightsRef = useRef<THREE.Light[]>([])
+  const clockRef = useRef<THREE.Clock | null>(null)
 
   // Load scene configuration
   const { config } = useSceneConfig()
 
   // Use GLTF Scene hook
-  const { isLoading, error, getMesh } = useGLTFScene({
+  const { isLoading, error, getMesh, nextAnimation, updateAnimation } = useGLTFScene({
     scene: sceneRef.current,
     modelUrl,
     meshVisibility,
@@ -94,9 +95,15 @@ const Scene = ({
     reloadTrigger,
   })
 
-  // Store getMesh in ref for use in animation loop
+  // Store refs for use in animation loop and event handlers
   const getMeshRef = useRef(getMesh)
   getMeshRef.current = getMesh
+
+  const updateAnimationRef = useRef(updateAnimation)
+  updateAnimationRef.current = updateAnimation
+
+  const nextAnimationRef = useRef(nextAnimation)
+  nextAnimationRef.current = nextAnimation
 
   // Initialize Three.js scene
   useEffect(() => {
@@ -134,6 +141,10 @@ const Scene = ({
     const controls = new OrbitControls(camera, renderer.domElement)
     controlsRef.current = controls
 
+    // Clock for animation delta time
+    const clock = new THREE.Clock()
+    clockRef.current = clock
+
     // Apply configuration
     applySceneConfig(scene, camera, controls, config)
 
@@ -157,9 +168,24 @@ const Scene = ({
     }
     window.addEventListener('resize', handleResize)
 
+    // Click handler for animation switching
+    const handleClick = () => {
+      const nextName = nextAnimationRef.current()
+      if (nextName) {
+        console.log(`Switched to animation: ${nextName}`)
+      }
+    }
+    renderer.domElement.addEventListener('click', handleClick)
+
     // Animation loop
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate)
+
+      // Update animation mixer
+      if (clockRef.current) {
+        const delta = clockRef.current.getDelta()
+        updateAnimationRef.current(delta)
+      }
 
       // Example: rotate meshes (access via getMeshRef)
       const cube = getMeshRef.current('Cube')
@@ -185,6 +211,7 @@ const Scene = ({
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize)
+      renderer.domElement.removeEventListener('click', handleClick)
 
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
