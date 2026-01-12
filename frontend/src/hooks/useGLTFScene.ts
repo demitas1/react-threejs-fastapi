@@ -103,7 +103,7 @@ export const useGLTFScene = ({
     } finally {
       setIsLoading(false)
     }
-  }, [scene, modelUrl, meshVisibility, onMeshesLoaded, onProgress])
+  }, [scene, modelUrl, onMeshesLoaded, onProgress])
 
   // Trigger load on URL or reloadTrigger change
   useEffect(() => {
