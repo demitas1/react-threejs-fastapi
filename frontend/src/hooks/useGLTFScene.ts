@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import * as THREE from 'three'
-import { GLTFSceneLoader, MeshInfo, AnimationInfo } from '../lib/gltf'
+import { GLTFSceneLoader, AnimationController, MeshInfo, AnimationInfo } from '../lib/gltf'
 
 interface UseGLTFSceneOptions {
   scene: THREE.Scene | null
@@ -36,6 +36,7 @@ export const useGLTFScene = ({
   reloadTrigger = 0,
 }: UseGLTFSceneOptions): UseGLTFSceneReturn => {
   const loaderRef = useRef<GLTFSceneLoader | null>(null)
+  const animControllerRef = useRef<AnimationController | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadProgress, setLoadProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -94,11 +95,26 @@ export const useGLTFScene = ({
       scene.add(result.model)
       setModel(result.model)
       setMeshInfos(result.meshInfos)
-      setAnimations(result.animations)
 
-      // Set current animation name
-      const initialAnimation = loaderRef.current.getCurrentAnimationName()
-      setCurrentAnimation(initialAnimation)
+      // Initialize AnimationController
+      if (animControllerRef.current) {
+        animControllerRef.current.dispose()
+        animControllerRef.current = null
+      }
+
+      if (result.clips.length > 0) {
+        animControllerRef.current = new AnimationController(
+          result.model,
+          result.clips,
+          { autoPlay: true }
+        )
+        const animationInfos = animControllerRef.current.getAnimations()
+        setAnimations(animationInfos)
+        setCurrentAnimation(animControllerRef.current.getCurrentAnimationName())
+      } else {
+        setAnimations([])
+        setCurrentAnimation(null)
+      }
 
       // Apply initial visibility
       if (Object.keys(meshVisibility).length > 0) {
@@ -112,8 +128,8 @@ export const useGLTFScene = ({
       }
 
       // Notify parent about animations
-      if (onAnimationsLoaded && result.animations.length > 0) {
-        onAnimationsLoaded(result.animations)
+      if (onAnimationsLoaded && animControllerRef.current) {
+        onAnimationsLoaded(animControllerRef.current.getAnimations())
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load model'
@@ -141,6 +157,10 @@ export const useGLTFScene = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      if (animControllerRef.current) {
+        animControllerRef.current.dispose()
+        animControllerRef.current = null
+      }
       if (loaderRef.current) {
         const currentModel = loaderRef.current.getModel()
         if (currentModel && scene) {
@@ -158,16 +178,16 @@ export const useGLTFScene = ({
 
   // Play animation by name
   const playAnimation = useCallback((name: string): void => {
-    if (loaderRef.current) {
-      loaderRef.current.playAnimation(name)
+    if (animControllerRef.current) {
+      animControllerRef.current.play(name)
       setCurrentAnimation(name)
     }
   }, [])
 
   // Play next animation in sequence
   const nextAnimation = useCallback((): string | null => {
-    if (loaderRef.current) {
-      const nextName = loaderRef.current.nextAnimation()
+    if (animControllerRef.current) {
+      const nextName = animControllerRef.current.next()
       if (nextName) {
         setCurrentAnimation(nextName)
       }
@@ -178,7 +198,7 @@ export const useGLTFScene = ({
 
   // Update animation mixer (call in animation loop)
   const updateAnimation = useCallback((delta: number): void => {
-    loaderRef.current?.update(delta)
+    animControllerRef.current?.update(delta)
   }, [])
 
   return {

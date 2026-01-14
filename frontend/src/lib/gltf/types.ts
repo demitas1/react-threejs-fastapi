@@ -35,7 +35,7 @@ export interface SceneLoadOptions {
 export interface SceneLoadResult {
   model: THREE.Group
   meshInfos: MeshInfo[]
-  animations: AnimationInfo[]
+  clips: THREE.AnimationClip[]
   meshes: Map<string, THREE.Mesh>
   materials: Map<string, THREE.Material>
   textures: Map<string, THREE.Texture>
