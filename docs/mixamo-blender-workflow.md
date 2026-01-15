@@ -19,22 +19,34 @@ MixamoからダウンロードしたFBXアニメーションを Blender 4.5 で1
 1. [Mixamo](https://www.mixamo.com/) にアクセス
 2. Characters から **Xbot** を選択
 3. Animations から **Idle** を選択
+
+![Mixamo Idle アニメーション選択画面](images/mixamo-idle-animation.jpg)
+
 4. Download Settings:
    - Format: **FBX Binary (.fbx)**
    - Skin: **With Skin**（1つ目のみ）
    - Frames per Second: **30**
    - Keyframe Reduction: **none**
+
+![Download Settings - With Skin](images/mixamo-download-with-skin.jpg)
+
 5. Download
 
 ### 1.2 FBX2（Walk）のダウンロード
 
 1. 同じ **Xbot** キャラクターを選択したまま
 2. Animations から **Walk** を選択
+
+![Mixamo Walking アニメーション選択画面](images/mixamo-walking-animation.jpg)
+
 3. Download Settings:
    - Format: **FBX Binary (.fbx)**
    - Skin: **Without Skin**（2つ目以降はスキン不要）
    - Frames per Second: **30**
    - Keyframe Reduction: **none**
+
+![Download Settings - Without Skin](images/mixamo-download-without-skin.jpg)
+
 4. Download
 
 ---
