@@ -152,6 +152,12 @@ Collection
 └── Armature (Walk アニメーション付き) ← 新規追加
 ```
 
+![FBX2 インポート後の Outliner](images/blender-walk-import-outliner.jpg)
+
+NLA Editor では以下のように表示されます：
+
+![FBX2 インポート後の NLA Editor](images/blender-walk-import-nla.jpg)
+
 ---
 
 ## 5. Walk アニメーションを Xbot に追加
@@ -161,12 +167,18 @@ Collection
 1. **Armature**（新しくインポートした方）を選択
 2. Action Editor でアクション名を `Armature|mixamo.com|Layer0` → **Walk** にリネーム
 
+![Walk にリネーム後の Outliner](images/blender-walk-rename-outliner.jpg)
+
+![Walk にリネーム後の NLA Editor](images/blender-walk-rename-nla.jpg)
+
 ### 5.2 Xbot に新しい NLA トラックを追加
 
 1. **Xbot** を選択
 2. **NLA Editor** を開く
 3. 左側のリストで **Xbot** の行を**右クリック**
 4. **Add Tracks** を選択
+
+![NLA トラック追加後](images/blender-add-nla-track.jpg)
 
 ### 5.3 Walk ストリップを追加
 
@@ -175,11 +187,17 @@ Collection
 3. **Add Action Strip** を選択
 4. リストから **Walk** を選択
 
+![Add Action Strip ダイアログ](images/blender-add-action-strip.jpg)
+
+![Walk ストリップ追加後](images/blender-walk-strip-added.jpg)
+
 ### 5.4 トラック名を整理
 
 1. NLA Editor で追加したトラック名「NlaTrack」をダブルクリック
 2. **Walk** にリネーム
 3. 不要な `<No Action>` トラックがあれば右クリック → **Delete Tracks** で削除
+
+![トラック名変更後](images/blender-track-renamed.jpg)
 
 ### 5.5 完成した構造
 
@@ -190,28 +208,30 @@ Xbot
 │   └── Idle  [=== Idle ===]
 ```
 
+![完成した Outliner 構造](images/blender-final-structure.jpg)
+
 ---
 
 ## 6. アニメーションのプレビュー確認
 
-### 6.1 Walk の確認
+### 6.1 Armature を不可視にする
+
+プレビュー時に Xbot のみが表示されるよう、インポートした Armature を非表示にします。
+
+1. Outliner で **Armature**（FBX2 でインポートした方）を選択
+2. **目のアイコン** 👁 をクリックして非表示にする
+
+### 6.2 Walk の確認
 
 1. NLA Editor で **Idle** トラックのチェックボックス ☑ を**外す**（ミュート）
 2. タイムラインで再生（スペースキー）
 3. Walk アニメーションが正しく再生されることを確認
 
-### 6.2 Idle の確認
+### 6.3 Idle の確認
 
 1. **Idle** トラックのチェックボックスを**オン**
 2. **Walk** トラックのチェックボックスを**オフ**
 3. Idle アニメーションが正しく再生されることを確認
-
-### 6.3 Tweak Mode での確認（代替方法）
-
-1. 確認したいストリップ（オレンジのバー）を選択
-2. **Tab** キーで Tweak Mode に入る
-3. そのアクションのみがプレビューされる
-4. 再度 **Tab** で戻る
 
 ---
 
@@ -232,6 +252,8 @@ Collection
     ├── Beta_Joints
     └── Beta_Surface
 ```
+
+![最終的な Outliner 構造（Xbot のみ）](images/blender-final-xbot-only.jpg)
 
 ---
 
