@@ -68,11 +68,15 @@ Outliner に以下の構造が表示されます：
 Collection
 └── Armature
     ├── Animation
-    │   └── Armature|mixamo.com|Layer0
-    │       └── Idle (NLAストリップ)
+    │   └── Armature|mixamo.com|Layer0 (アクション)
+    │       └── Armature|mixamo.com|Layer0 (スロット)
+    ├── Pose
+    ├── Armature (ボーン)
     ├── Beta_Joints (メッシュ)
     └── Beta_Surface (メッシュ)
 ```
+
+![Blender FBXインポート直後のOutliner](images/blender-fbx-import-result.jpg)
 
 ### 2.3 Armature を Xbot にリネーム
 
@@ -92,17 +96,42 @@ Collection
    - `Armature|mixamo.com|Layer0` → **Idle** にリネーム
 4. Slot名も必要に応じて **Idle** に統一
 
-### 3.2 NLA Editor で構造を確認
+リネーム後、Outlinerは以下のようになります：
+
+![Xbot/Idleにリネーム後のOutliner](images/blender-renamed-xbot-idle.jpg)
+
+### 3.2 NLA トラックを作成（Push Down）
 
 1. エディタを **NLA Editor** に変更
-2. 以下の構造になっていることを確認：
+
+現在の状態（Push Down 前）：
+
+![NLA Editor - Push Down 前の状態](images/blender-nla-editor-idle.jpg)
+
+2. **Xbot-Idle** の行にある **Push Down Action** ボタン（下矢印アイコン）をクリック
+3. 以下の構造になっていることを確認：
 
 ```
 Xbot
+├── <No Action>
 └── Idle [====ストリップ====]
 ```
 
-> **注意**: もし `<No Action>` というトラックと別に Idle ストリップがある場合は、Action Editor で Idle を選択し `Action → Push Down` を実行してNLAに統合してください。
+![NLA Editor での Push Down 後の状態](images/blender-nla-push-down.jpg)
+
+Outliner では以下の構造になります：
+
+```
+Xbot
+└── Animation
+    └── NLA Tracks
+        └── Idle
+            └── Idle (ストリップ)
+```
+
+![Push Down 後の Outliner 構造](images/blender-outliner-nla-tracks.jpg)
+
+> **注意**: `<No Action>` トラックは現在アクティブなアクションがないことを示しています。これは正常な状態です。
 
 ---
 
