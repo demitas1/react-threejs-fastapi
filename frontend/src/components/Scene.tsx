@@ -1,10 +1,143 @@
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { MapControls } from 'three/addons/controls/MapControls.js'
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js'
+import { FlyControls } from 'three/addons/controls/FlyControls.js'
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js'
 import { useGLTFScene } from '../hooks/useGLTFScene'
 import { useSceneConfig } from '../hooks/useSceneConfig'
 import { MeshInfo } from '../lib/gltf'
-import type { SceneConfig } from '../config/types'
+import type {
+  SceneConfig,
+  ControlsConfig,
+  OrbitControlsConfig,
+  MapControlsConfig,
+  TrackballControlsConfig,
+  FlyControlsConfig,
+  FirstPersonControlsConfig,
+} from '../config/types'
+
+/**
+ * Union type for all possible camera controls
+ */
+type CameraControls =
+  | OrbitControls
+  | MapControls
+  | TrackballControls
+  | FlyControls
+  | FirstPersonControls
+  | null
+
+/**
+ * Create camera controls based on configuration
+ */
+function createControls(
+  config: ControlsConfig,
+  camera: THREE.PerspectiveCamera,
+  domElement: HTMLElement
+): CameraControls {
+  switch (config.type) {
+    case 'none':
+      return null
+
+    case 'orbit': {
+      const controls = new OrbitControls(camera, domElement)
+      applyOrbitControlsConfig(controls, config as OrbitControlsConfig)
+      return controls
+    }
+
+    case 'map': {
+      const controls = new MapControls(camera, domElement)
+      applyMapControlsConfig(controls, config as MapControlsConfig)
+      return controls
+    }
+
+    case 'trackball': {
+      const controls = new TrackballControls(camera, domElement)
+      applyTrackballControlsConfig(controls, config as TrackballControlsConfig)
+      return controls
+    }
+
+    case 'fly': {
+      const controls = new FlyControls(camera, domElement)
+      applyFlyControlsConfig(controls, config as FlyControlsConfig)
+      return controls
+    }
+
+    case 'firstPerson': {
+      const controls = new FirstPersonControls(camera, domElement)
+      applyFirstPersonControlsConfig(controls, config as FirstPersonControlsConfig)
+      return controls
+    }
+
+    default:
+      console.warn(`Unknown controls type: ${(config as ControlsConfig).type}, using OrbitControls`)
+      return new OrbitControls(camera, domElement)
+  }
+}
+
+/**
+ * Apply OrbitControls configuration
+ */
+function applyOrbitControlsConfig(controls: OrbitControls, config: OrbitControlsConfig): void {
+  if (config.enableDamping !== undefined) controls.enableDamping = config.enableDamping
+  if (config.dampingFactor !== undefined) controls.dampingFactor = config.dampingFactor
+  if (config.autoRotate !== undefined) controls.autoRotate = config.autoRotate
+  if (config.autoRotateSpeed !== undefined) controls.autoRotateSpeed = config.autoRotateSpeed
+  if (config.enableZoom !== undefined) controls.enableZoom = config.enableZoom
+  if (config.enablePan !== undefined) controls.enablePan = config.enablePan
+  if (config.minDistance !== undefined) controls.minDistance = config.minDistance
+  if (config.maxDistance !== undefined) controls.maxDistance = config.maxDistance
+  if (config.minPolarAngle !== undefined) controls.minPolarAngle = config.minPolarAngle
+  if (config.maxPolarAngle !== undefined) controls.maxPolarAngle = config.maxPolarAngle
+}
+
+/**
+ * Apply MapControls configuration
+ */
+function applyMapControlsConfig(controls: MapControls, config: MapControlsConfig): void {
+  if (config.enableDamping !== undefined) controls.enableDamping = config.enableDamping
+  if (config.dampingFactor !== undefined) controls.dampingFactor = config.dampingFactor
+  if (config.screenSpacePanning !== undefined) controls.screenSpacePanning = config.screenSpacePanning
+  if (config.enableZoom !== undefined) controls.enableZoom = config.enableZoom
+  if (config.minDistance !== undefined) controls.minDistance = config.minDistance
+  if (config.maxDistance !== undefined) controls.maxDistance = config.maxDistance
+}
+
+/**
+ * Apply TrackballControls configuration
+ */
+function applyTrackballControlsConfig(controls: TrackballControls, config: TrackballControlsConfig): void {
+  if (config.rotateSpeed !== undefined) controls.rotateSpeed = config.rotateSpeed
+  if (config.zoomSpeed !== undefined) controls.zoomSpeed = config.zoomSpeed
+  if (config.panSpeed !== undefined) controls.panSpeed = config.panSpeed
+  if (config.staticMoving !== undefined) controls.staticMoving = config.staticMoving
+  if (config.dynamicDampingFactor !== undefined) controls.dynamicDampingFactor = config.dynamicDampingFactor
+}
+
+/**
+ * Apply FlyControls configuration
+ */
+function applyFlyControlsConfig(controls: FlyControls, config: FlyControlsConfig): void {
+  if (config.movementSpeed !== undefined) controls.movementSpeed = config.movementSpeed
+  if (config.rollSpeed !== undefined) controls.rollSpeed = config.rollSpeed
+  if (config.dragToLook !== undefined) controls.dragToLook = config.dragToLook
+  if (config.autoForward !== undefined) controls.autoForward = config.autoForward
+}
+
+/**
+ * Apply FirstPersonControls configuration
+ */
+function applyFirstPersonControlsConfig(controls: FirstPersonControls, config: FirstPersonControlsConfig): void {
+  if (config.movementSpeed !== undefined) controls.movementSpeed = config.movementSpeed
+  if (config.lookSpeed !== undefined) controls.lookSpeed = config.lookSpeed
+  if (config.lookVertical !== undefined) controls.lookVertical = config.lookVertical
+  if (config.activeLook !== undefined) controls.activeLook = config.activeLook
+  if (config.constrainVertical !== undefined) controls.constrainVertical = config.constrainVertical
+  if (config.verticalMin !== undefined) controls.verticalMin = config.verticalMin
+  if (config.verticalMax !== undefined) controls.verticalMax = config.verticalMax
+}
 
 interface SceneProps {
   modelUrl?: string
@@ -16,12 +149,12 @@ interface SceneProps {
 }
 
 /**
- * Apply scene configuration to Three.js objects
+ * Apply scene configuration to Three.js objects (camera and background only)
+ * Controls are configured separately via createControls
  */
 function applySceneConfig(
   scene: THREE.Scene,
   camera: THREE.PerspectiveCamera,
-  controls: OrbitControls,
   config: SceneConfig
 ): void {
   // Background
@@ -33,10 +166,6 @@ function applySceneConfig(
   camera.far = config.camera.far
   camera.position.set(...config.camera.position)
   camera.updateProjectionMatrix()
-
-  // Controls
-  controls.enableDamping = config.controls.enableDamping
-  controls.dampingFactor = config.controls.dampingFactor
 }
 
 /**
@@ -77,7 +206,7 @@ const Scene = ({
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
-  const controlsRef = useRef<OrbitControls | null>(null)
+  const controlsRef = useRef<CameraControls>(null)
   const animationRef = useRef<number>(0)
   const lightsRef = useRef<THREE.Light[]>([])
   const clockRef = useRef<THREE.Clock | null>(null)
@@ -137,16 +266,16 @@ const Scene = ({
     )
     cameraRef.current = camera
 
-    // Controls
-    const controls = new OrbitControls(camera, renderer.domElement)
+    // Controls (may be null if type is 'none')
+    const controls = createControls(config.controls, camera, renderer.domElement)
     controlsRef.current = controls
 
     // Clock for animation delta time
     const clock = new THREE.Clock()
     clockRef.current = clock
 
-    // Apply configuration
-    applySceneConfig(scene, camera, controls, config)
+    // Apply configuration (camera and background)
+    applySceneConfig(scene, camera, config)
 
     // Create and add lights
     const lights = createLights(config)
@@ -181,11 +310,11 @@ const Scene = ({
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate)
 
+      // Get delta time
+      const delta = clockRef.current ? clockRef.current.getDelta() : 0
+
       // Update animation mixer
-      if (clockRef.current) {
-        const delta = clockRef.current.getDelta()
-        updateAnimationRef.current(delta)
-      }
+      updateAnimationRef.current(delta)
 
       // Example: rotate meshes (access via getMeshRef)
       const cube = getMeshRef.current('Cube')
@@ -198,8 +327,14 @@ const Scene = ({
         icosphere.rotation.y += 0.01
       }
 
+      // Update controls (some controls require delta time)
       if (controlsRef.current) {
-        controlsRef.current.update()
+        const ctrl = controlsRef.current
+        if (ctrl instanceof FlyControls || ctrl instanceof FirstPersonControls) {
+          ctrl.update(delta)
+        } else {
+          ctrl.update()
+        }
       }
 
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
