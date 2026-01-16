@@ -68,10 +68,24 @@ WebSocket通信を介したリアルタイム3D可視化アプリケーション
 - **0.5秒クロスフェード**: アニメーション切り替え時のスムーズなブレンド
 - 複数アニメーション対応（将来の追加・名称変更にも対応）
 
-#### OrbitControlsによるカメラ操作
+#### カメラコントロール（6種類対応）
+
+設定ファイルで切り替え可能な6種類のカメラコントロールをサポート。
+
+| type | 説明 | 主な用途 |
+|------|------|----------|
+| `none` | コントロールなし | 固定カメラ、アニメーション専用シーン |
+| `orbit` | OrbitControls | 汎用3Dビューア（デフォルト） |
+| `map` | MapControls | 地図・上から見下ろす用途 |
+| `trackball` | TrackballControls | 制限なし回転、CAD風操作 |
+| `fly` | FlyControls | フライトシミュレータ風 |
+| `firstPerson` | FirstPersonControls | 一人称視点 |
+
+**OrbitControls（デフォルト）の機能:**
 - マウスドラッグによる回転
 - スクロールによるズーム
 - ダンピング（慣性）効果のサポート
+- 自動回転オプション
 
 #### メッシュの表示/非表示切り替え
 - チェックボックスによる個別メッシュの表示制御
@@ -110,8 +124,18 @@ WebSocket通信を介したリアルタイム3D可視化アプリケーション
 |----------|----------|
 | 背景 | 背景色 |
 | カメラ | FOV、near/far、初期位置 |
-| コントロール | ダンピング有効/無効、減衰係数 |
+| コントロール | タイプ（6種類）、各種パラメータ |
 | ライティング | 環境光（色、強度）、指向光（複数設定可能） |
+
+#### コントロール設定オプション
+
+| Controls | 主な設定項目 |
+|----------|-------------|
+| orbit | enableDamping, dampingFactor, autoRotate, enableZoom, enablePan, minDistance, maxDistance |
+| map | enableDamping, dampingFactor, screenSpacePanning, enableZoom |
+| trackball | rotateSpeed, zoomSpeed, panSpeed, staticMoving |
+| fly | movementSpeed, rollSpeed, dragToLook, autoForward |
+| firstPerson | movementSpeed, lookSpeed, lookVertical, activeLook |
 
 #### 設定ファイル例
 
@@ -125,6 +149,7 @@ WebSocket通信を介したリアルタイム3D可視化アプリケーション
     "position": [0, 0, 20]
   },
   "controls": {
+    "type": "orbit",
     "enableDamping": true,
     "dampingFactor": 0.25
   },
@@ -133,6 +158,16 @@ WebSocket通信を介したリアルタイム3D可視化アプリケーション
     "directional": [
       { "color": "#ffffff", "intensity": 1, "position": [5, 5, 5] }
     ]
+  }
+}
+```
+
+#### 固定カメラ（コントロールなし）の設定例
+
+```json
+{
+  "controls": {
+    "type": "none"
   }
 }
 ```
